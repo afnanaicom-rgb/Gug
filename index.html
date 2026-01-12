@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Afnan Chat - Group Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Noto Sans Arabic', sans-serif;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            position: relative;
+            padding-top: 95px;
+        }
+
+        .dynamic-header {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 95px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 640px) {
+            .dynamic-header {
+                height: 85px;
+                padding: 0 1rem;
+            }
+            .app-container {
+                padding-top: 85px;
+            }
+        }
+
+        .dynamic-header.scrolled {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(40px) saturate(200%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 20px;
+        }
+
+        .content-area::-webkit-scrollbar {
+            width: 3px;
+        }
+        .content-area::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 280px;
+            background: #080808;
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2000;
+        }
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        /* نافذة الهدايا (Bottom Sheet) */
+        .gifts-bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            height: calc(50vh - 60px);
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 28px 28px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 3000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gifts-bottom-sheet.open {
+            transform: translateY(0);
+        }
+
+        .gifts-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gifts-balance {
+            font-size: 0.9rem;
+            color: #FFD700;
+            font-weight: 600;
+            background: rgba(255, 215, 0, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .active-users-section {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .active-users-section::-webkit-scrollbar {
+            display: none;
+        }
+
+        .active-users-container {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: nowrap;
+        }
+
+        .user-avatar-item {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            position: relative;
+            overflow: visible;
+        }
+
+        .user-avatar-item img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-cover: cover;
+        }
+
+        .user-avatar-item:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        .user-avatar-item.selected {
+            border-color: #00FF00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .user-avatar-item.selected::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #00FF00;
+            border-radius: 50%;
+            bottom: 0;
+            right: 0;
+            border: 2px solid #000;
+            z-index: 2;
+        }
+
+        .gifts-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .gifts-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.75rem;
+        }
+
+        .gift-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.75rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gift-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .gift-card.selected {
+            background: rgba(255, 165, 0, 0.15);
+            border-color: #FFA500;
+            box-shadow: inset 0 0 10px rgba(255, 165, 0, 0.2);
+        }
+
+        .gift-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .gift-name {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-bottom: 0.25rem;
+        }
+
+        .gift-price {
+            color: #FFD700;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .gifts-footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .send-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #FFA500, #FF8C00);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .quantity-input {
+            width: 70px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            padding: 0.6rem;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .footer-area {
+            flex-shrink: 0;
+            padding: 1rem 1.5rem 1.5rem;
+            background: linear-gradient(to top, black 80%, transparent);
+        }
+
+        .input-glass-container {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            max-width: 50rem;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        textarea {
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            resize: none;
+            color: white;
+            font-size: 1.1rem;
+            width: 100%;
+            max-height: 200px;
+        }
+
+        .msg-in {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1500;
+        }
+        .overlay.active { display: block; }
+
+        .glass-effect {
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.1),
+                rgba(255, 255, 255, 0.05)
+            );
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .message-bubble {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.75rem 1.25rem;
+            border-radius: 22px;
+            max-width: 85%;
+        }
+
+        .user-name-tag {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+            opacity: 0.6;
+        }
+
+        .gift-message {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.15), rgba(255, 140, 0, 0.05));
+            border: 1px solid rgba(255, 165, 0, 0.2);
+            color: #FFA500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- الحافة العلوية المحسنة -->
+        <header class="dynamic-header" id="main-header">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="p-3 hover:bg-white/10 rounded-2xl transition-all glass-effect flex items-center justify-center">
+                    <i data-lucide="menu" class="w-7 h-7 text-white"></i>
+                </button>
+            </div>
+            
+            <div class="flex flex-col items-center">
+                <span class="text-[11px] font-bold tracking-[0.5em] text-white/30 uppercase">Afnan Chat</span>
+                <div class="h-[2px] w-12 bg-gradient-to-r from-transparent via-white/30 to-transparent mt-2 rounded-full"></div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-full border border-white/10 bg-gradient-to-br from-white/15 to-transparent flex items-center justify-center glass-effect">
+                    <i data-lucide="users" class="w-6 h-6 text-white/60"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- منطقة التمرير -->
+        <main id="chat-scroller" class="content-area">
+            <div class="max-w-3xl w-full mx-auto px-4 sm:px-6 py-10 flex flex-col gap-6">
+                <div id="welcome-view" class="text-center py-16 sm:py-20 space-y-4">
+                    <h1 class="text-3xl sm:text-4xl font-light text-white/90">مرحباً بكم في الدردشة الجماعية</h1>
+                    <p class="text-white/20 text-base sm:text-lg">تواصل مع الجميع وأرسل الهدايا</p>
+                </div>
+                <div id="messages-list" class="flex flex-col gap-6 w-full pb-4"></div>
+            </div>
+        </main>
+
+        <!-- منطقة الإدخال -->
+        <footer class="footer-area">
+            <div class="input-glass-container overflow-hidden">
+                <div id="media-preview" class="hidden p-3 border-b border-white/5 flex gap-2 overflow-x-auto"></div>
+                
+                <div class="flex items-end p-2 px-3 gap-1">
+                    <label class="p-3 text-white/30 hover:text-white cursor-pointer transition-all rounded-full hover:bg-white/5">
+                        <i data-lucide="image" class="w-6 h-6"></i>
+                        <input type="file" accept="image/*" onchange="handleImage(this)" class="hidden">
+                    </label>
+
+                    <!-- زر فتح نافذة الهدايا -->
+                    <button onclick="toggleGifts()" class="p-3 text-white/30 hover:text-white cursor-pointer transition-all rounded-full hover:bg-white/5">
+                        <i data-lucide="box" class="w-6 h-6"></i>
+                    </button>
+
+                    <textarea 
+                        id="user-input"
+                        rows="1"
+                        placeholder="اكتب رسالة للجميع..."
+                        class="flex-1 py-4 px-2"
+                        oninput="autoResize(this)"
+                    ></textarea>
+                    
+                    <div class="flex items-center gap-1 mb-1">
+                        <button 
+                            id="send-btn"
+                            class="p-3 bg-white text-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl"
+                            onclick="sendMessage()"
+                        >
+                            <i data-lucide="send" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Sidebar & Overlay -->
+    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+    <aside id="sidebar" class="sidebar">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center">
+            <span class="text-xs font-bold opacity-30 tracking-widest">القائمة</span>
+            <button onclick="toggleSidebar()" class="p-2 hover:bg-white/10 rounded-lg transition-all">
+                <i data-lucide="x" class="w-5 h-5 opacity-60"></i>
+            </button>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto">
+            <div class="space-y-2">
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/5 text-sm flex items-center gap-3">
+                    <i data-lucide="message-square" class="w-4 h-4"></i> الدردشة العامة
+                </div>
+                <div class="p-4 rounded-2xl hover:bg-white/5 transition-all text-sm flex items-center gap-3 opacity-50">
+                    <i data-lucide="settings" class="w-4 h-4"></i> الإعدادات
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- نافذة الهدايا (Bottom Sheet) -->
+    <div id="gifts-sheet" class="gifts-bottom-sheet">
+        <div class="gifts-header">
+            <div class="flex items-center gap-2">
+                <i data-lucide="box" class="w-5 h-5 text-purple-300"></i>
+                <span class="text-sm font-semibold">صندوق الهدايا</span>
+            </div>
+            <div class="gifts-balance">
+                <span id="balance-amount">1000</span> 💰
+            </div>
+            <button onclick="toggleGifts()" class="p-2 hover:bg-white/10 rounded-full transition-all">
+                <i data-lucide="x" class="w-5 h-5 opacity-60"></i>
+            </button>
+        </div>
+
+        <!-- قائمة المستخدمين النشطين بصور حقيقية -->
+        <div class="active-users-section">
+            <div class="active-users-container" id="active-users-container">
+                <!-- سيتم ملء المستخدمين بواسطة JavaScript -->
+            </div>
+        </div>
+
+        <!-- شبكة الهدايا -->
+        <div class="gifts-content">
+            <div class="gifts-grid" id="gifts-grid">
+                <!-- سيتم ملء الهدايا بواسطة JavaScript -->
+            </div>
+        </div>
+
+        <!-- زر الإرسال -->
+        <div class="gifts-footer">
+            <input type="number" id="gift-quantity" class="quantity-input" value="1" min="1" max="100">
+            <button class="send-btn" id="send-gift-btn" onclick="sendGift()" disabled>
+                إرسال الهدية
+            </button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        const userInput = document.getElementById('user-input');
+        const messagesList = document.getElementById('messages-list');
+        const chatScroller = document.getElementById('chat-scroller');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const mediaPreview = document.getElementById('media-preview');
+        const mainHeader = document.getElementById('main-header');
+        const giftsSheet = document.getElementById('gifts-sheet');
+        const giftsGrid = document.getElementById('gifts-grid');
+        const activeUsersContainer = document.getElementById('active-users-container');
+        const sendGiftBtn = document.getElementById('send-gift-btn');
+        const balanceAmount = document.getElementById('balance-amount');
+
+        let selectedImage = null;
+        let selectedGift = null;
+        let selectedUser = null;
+        let userBalance = 1000;
+
+        // بيانات المستخدمين النشطين بصور حقيقية
+        const activeUsers = [
+            { id: 1, name: 'أفنان', img: 'https://i.pravatar.cc/150?u=afnan' },
+            { id: 2, name: 'محمد', img: 'https://i.pravatar.cc/150?u=mohamed' },
+            { id: 3, name: 'سارة', img: 'https://i.pravatar.cc/150?u=sara' },
+            { id: 4, name: 'أحمد', img: 'https://i.pravatar.cc/150?u=ahmed' },
+            { id: 5, name: 'نور', img: 'https://i.pravatar.cc/150?u=nour' },
+            { id: 6, name: 'ياسين', img: 'https://i.pravatar.cc/150?u=yassin' },
+            { id: 7, name: 'ليلى', img: 'https://i.pravatar.cc/150?u=layla' }
+        ];
+
+        // بيانات الهدايا
+        const gifts = [
+            { id: 1, name: "ماس", price: 3999, emoji: "💎" },
+            { id: 2, name: "ثلج", price: 666, emoji: "❄️" },
+            { id: 3, name: "كرة قدم", price: 666, emoji: "⚽" },
+            { id: 4, name: "شاي", price: 666, emoji: "☕" },
+            { id: 5, name: "جرس", price: 499, emoji: "🔔" },
+            { id: 6, name: "قلب", price: 599, emoji: "❤️" },
+            { id: 7, name: "نجم", price: 299, emoji: "⭐" },
+            { id: 8, name: "تاج", price: 666, emoji: "👑" },
+            { id: 9, name: "ورد", price: 500, emoji: "🌹" },
+            { id: 10, name: "شمس", price: 400, emoji: "☀️" }
+        ];
+
+        // تهيئة المستخدمين النشطين
+        function initializeActiveUsers() {
+            activeUsersContainer.innerHTML = '';
+            activeUsers.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'user-avatar-item';
+                userDiv.innerHTML = `<img src="${user.img}" alt="${user.name}">`;
+                userDiv.onclick = () => selectUser(user, userDiv);
+                activeUsersContainer.appendChild(userDiv);
+            });
+        }
+
+        function selectUser(user, element) {
+            document.querySelectorAll('.user-avatar-item').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedUser = user;
+            updateSendButtonState();
+        }
+
+        // تهيئة الهدايا
+        function initializeGifts() {
+            giftsGrid.innerHTML = '';
+            gifts.forEach(gift => {
+                const giftCard = document.createElement('div');
+                giftCard.className = 'gift-card';
+                giftCard.innerHTML = `
+                    <div class="gift-icon">${gift.emoji}</div>
+                    <div class="gift-name">${gift.name}</div>
+                    <div class="gift-price">${gift.price}</div>
+                `;
+                giftCard.onclick = () => selectGift(gift, giftCard);
+                giftsGrid.appendChild(giftCard);
+            });
+        }
+
+        function selectGift(gift, element) {
+            document.querySelectorAll('.gift-card').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedGift = gift;
+            updateSendButtonState();
+        }
+
+        function updateSendButtonState() {
+            sendGiftBtn.disabled = !(selectedGift && selectedUser);
+        }
+
+        // إرسال الهدية في الدردشة الجماعية
+        function sendGift() {
+            if (!selectedGift || !selectedUser) return;
+            const quantity = parseInt(document.getElementById('gift-quantity').value) || 1;
+            const totalCost = selectedGift.price * quantity;
+
+            if (totalCost > userBalance) {
+                alert("رصيدك غير كافي!");
+                return;
+            }
+
+            userBalance -= totalCost;
+            balanceAmount.textContent = userBalance;
+
+            // إضافة رسالة الهدية للدردشة
+            addMessage(`أرسل ${quantity} × ${selectedGift.emoji} ${selectedGift.name} إلى ${selectedUser.name}`, true, null, true);
+            
+            toggleGifts();
+            // إعادة تعيين
+            selectedGift = null;
+            selectedUser = null;
+            document.querySelectorAll('.gift-card, .user-avatar-item').forEach(el => el.classList.remove('selected'));
+            updateSendButtonState();
+        }
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function toggleGifts() {
+            giftsSheet.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+
+        function handleImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    selectedImage = e.target.result;
+                    mediaPreview.innerHTML = `
+                        <div class="relative shrink-0">
+                            <img src="${selectedImage}" class="w-16 h-16 object-cover rounded-xl border border-white/10">
+                            <button onclick="clearMedia()" class="absolute -top-1 -right-1 bg-black rounded-full p-1 border border-white/20"><i data-lucide="x" class="w-3 h-3"></i></button>
+                        </div>
+                    `;
+                    mediaPreview.classList.remove('hidden');
+                    lucide.createIcons();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function clearMedia() {
+            selectedImage = null;
+            mediaPreview.classList.add('hidden');
+        }
+
+        // إضافة رسالة للدردشة الجماعية
+        function addMessage(text, isMe, img = null, isGift = false) {
+            const welcome = document.getElementById('welcome-view');
+            if (welcome) welcome.style.display = 'none';
+
+            const div = document.createElement('div');
+            div.className = `flex w-full ${isMe ? 'justify-end' : 'justify-start'} msg-in`;
+            
+            const userName = isMe ? "أنا" : activeUsers[Math.floor(Math.random() * activeUsers.length)].name;
+            const userImg = isMe ? "https://i.pravatar.cc/150?u=me" : activeUsers[Math.floor(Math.random() * activeUsers.length)].img;
+
+            div.innerHTML = `
+                <div class="flex gap-3 max-w-[90%] ${isMe ? 'flex-row-reverse' : ''}">
+                    <img src="${userImg}" class="w-9 h-9 rounded-full border border-white/10 shrink-0 mt-1">
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                        <span class="user-name-tag">${userName}</span>
+                        <div class="message-bubble ${isGift ? 'gift-message' : ''}">
+                            ${img ? `<img src="${img}" class="max-w-full rounded-xl mb-2 border border-white/10">` : ''}
+                            <p class="text-[15px] font-light leading-relaxed">${text}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesList.appendChild(div);
+            chatScroller.scrollTo({ top: chatScroller.scrollHeight, behavior: 'smooth' });
+        }
+
+        function sendMessage() {
+            const val = userInput.value.trim();
+            if (!val && !selectedImage) return;
+            addMessage(val, true, selectedImage);
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            clearMedia();
+
+            // محاكاة رد من مستخدم آخر بعد فترة بسيطة (دردشة جماعية)
+            setTimeout(() => {
+                const randomResponses = ["جميل جداً!", "أهلاً بك في المجموعة", "كيف حالكم جميعاً؟", "تصميم رائع", "🌹🌹🌹"];
+                const randomText = randomResponses[Math.floor(Math.random() * randomResponses.length)];
+                addMessage(randomText, false);
+            }, 1500);
+        }
+
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        chatScroller.addEventListener('scroll', () => {
+            if (chatScroller.scrollTop > 20) {
+                mainHeader.classList.add('scrolled');
+            } else {
+                mainHeader.classList.remove('scrolled');
+            }
+        });
+
+        // تهيئة الصفحة
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeGifts();
+            initializeActiveUsers();
+            
+            // إضافة بعض الرسائل الترحيبية
+            setTimeout(() => addMessage("أهلاً بالجميع في الدردشة!", false), 500);
+            setTimeout(() => addMessage("منورين يا شباب ✨", false), 1200);
+        });
+    </script>
+</body>
+</html>
