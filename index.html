@@ -3,33 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Afnan Chat - تسجيل الدخول</title>
+<title>Afnan Chat - تسجيل الدخول عبر Google</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-    body, html { margin:0; padding:0; height:100%; background:#000; color:#fff; font-family:'Noto Sans Arabic', sans-serif; display:flex; justify-content:center; align-items:center; }
-    .login-box { background: rgba(255,255,255,0.05); padding:30px; border-radius:20px; backdrop-filter:blur(15px); width:300px; display:flex; flex-direction:column; gap:15px; }
-    input { padding:10px; border-radius:12px; border:none; outline:none; background:#111; color:#fff; }
-    button { padding:10px; border-radius:12px; border:none; background:#FFA500; color:#000; font-weight:bold; cursor:pointer; }
+body, html { margin:0; padding:0; height:100%; background:#000; color:#fff; font-family:'Noto Sans Arabic', sans-serif; display:flex; justify-content:center; align-items:center; }
+.login-box { background: rgba(255,255,255,0.05); padding:30px; border-radius:20px; backdrop-filter:blur(15px); width:300px; display:flex; flex-direction:column; gap:15px; text-align:center; }
+button { padding:10px; border-radius:12px; border:none; background:#FFA500; color:#000; font-weight:bold; cursor:pointer; }
 </style>
 </head>
 <body>
 
 <div class="login-box">
-    <h2 class="text-center font-bold mb-4">تسجيل الدخول</h2>
-    <input type="text" id="name" placeholder="الاسم">
-    <input type="email" id="email" placeholder="البريد الإلكتروني">
-    <input type="url" id="photoURL" placeholder="رابط الصورة">
-    <button onclick="loginUser()">تسجيل الدخول</button>
+    <h2 class="font-bold mb-4">تسجيل الدخول عبر Google</h2>
+    <button id="google-login">تسجيل الدخول</button>
     <div id="status" class="text-sm text-red-500 mt-2"></div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-// Firebase Config
+// Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyCyCqrlFUn1UJr29tJGqikSNwsSo5_ieJo",
     authDomain: "afnan-6a676.firebaseapp.com",
@@ -42,64 +38,67 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-// دالة توليد ID مكون من 8 أرقام
-function generateUniqueId(){
-    return Math.floor(10000000 + Math.random() * 90000000).toString();
+// توليد ID فريد مكون من 8 أرقام
+async function generateUniqueId() {
+    let unique = false;
+    let newId;
+    const usersRef = collection(db, "users");
+
+    while (!unique) {
+        newId = Math.floor(10000000 + Math.random() * 90000000).toString();
+        const snapshot = await getDocs(usersRef);
+        unique = !snapshot.docs.some(doc => doc.data().userId === newId);
+    }
+    return newId;
 }
 
-// تسجيل الدخول / إنشاء المستخدم
-async function loginUser(){
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const photoURL = document.getElementById('photoURL').value.trim() || "https://i.pravatar.cc/150?u="+Math.random();
-
-    if(!name || !email){
-        document.getElementById('status').textContent = "الرجاء إدخال الاسم والبريد الإلكتروني!";
-        return;
-    }
-
-    // uid مؤقت: نستخدم البريد الإلكتروني كمعرف مؤقت
-    const uid = btoa(email); // تحويل البريد لbase64 ليكون معرف فريد
-
+document.getElementById('google-login').onclick = async () => {
     try {
-        const userRef = doc(db, "users", uid);
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
 
         let userData;
 
-        if(!userSnap.exists()){
+        if (!userSnap.exists()) {
             // مستخدم جديد
-            const newId = generateUniqueId();
+            const newId = await generateUniqueId();
             userData = {
-                uid: uid,
+                uid: user.uid,
                 userId: newId,
-                displayName: name,
-                email: email,
-                photoURL: photoURL,
+                displayName: user.displayName || "مستخدم جديد",
+                email: user.email,
+                photoURL: user.photoURL || "https://i.pravatar.cc/150?u=" + user.uid,
                 balance: 27000,
                 createdAt: serverTimestamp(),
                 lastLogin: serverTimestamp()
             };
             await setDoc(userRef, userData);
-            console.log("مستخدم جديد تم إنشاؤه:", newId);
+            console.log("🆕 مستخدم جديد تم إنشاؤه:", newId);
         } else {
             // مستخدم موجود
             userData = userSnap.data();
-            console.log("مستخدم موجود:", userData.userId);
+            console.log("👤 مستخدم موجود:", userData.userId);
+            await setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true });
         }
 
-        // حفظ بيانات المستخدم في LocalStorage لصفحة app.html
+        // حفظ بيانات المستخدم مؤقتًا للصفحة التالية
         localStorage.setItem('currentUser', JSON.stringify(userData));
 
-        // إعادة التوجيه
+        // إعادة التوجيه لصفحة app.html
         window.location.href = "app.html";
 
     } catch (error) {
-        console.error("حدث خطأ:", error);
-        document.getElementById('status').textContent = "حدث خطأ في تسجيل الدخول، حاول مرة أخرى!";
+        console.error("❌ حدث خطأ أثناء تسجيل الدخول:", error);
+        document.getElementById('status').textContent = "حدث خطأ، حاول مرة أخرى!";
     }
-}
+};
 </script>
+
 </body>
 </html>
