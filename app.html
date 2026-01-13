@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Afnan Chat - Elite Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { height: 100%; margin: 0; padding: 0; background-color: #000000; color: #ffffff; font-family: 'Noto Sans Arabic', sans-serif; overflow: hidden; }
+        
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #FFA500;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Navigation Views */
+        .view-screen { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; z-index: 10; padding-top: 80px; }
+        .view-screen.active { display: flex; }
+
+        /* App Header */
+        .app-header { position: fixed; top: 0; right: 0; left: 0; height: 80px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 1.2rem; z-index: 1000; }
+        
+        /* Sidebar Navigation */
+        .sidebar { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: #0a0a0a; z-index: 4000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-left: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; }
+        .sidebar.open { right: 0; }
+        .sidebar-item { display: flex; align-items: center; gap: 15px; padding: 14px 20px; cursor: pointer; border-radius: 12px; margin: 2px 10px; transition: 0.2s; }
+        .sidebar-item:active { background: rgba(255,255,255,0.05); }
+
+        /* Wallet Styles */
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 25px; text-align: center; }
+        .buy-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 15px; text-align: center; }
+
+        /* Bottom Sheets */
+        .bottom-sheet { position: fixed; bottom: 0; right: 0; left: 0; background: rgba(15, 15, 15, 0.98); backdrop-filter: blur(40px); border-top: 1px solid rgba(255, 255, 255, 0.15); border-radius: 30px 30px 0 0; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 3000; }
+        .bottom-sheet.open { transform: translateY(0); }
+
+        /* Chat Layout */
+        .chat-content { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .msg-bubble { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 14px; position: relative; }
+        .msg-me { background: #FFA500; color: #000; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-them { background: rgba(255,255,255,0.1); color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2500; display: none; backdrop-filter: blur(5px); }
+        .overlay.active { display: block; }
+        
+        .gift-item { display: flex; flex-direction: column; align-items: center; padding: 15px; border-radius: 15px; background: rgba(255,255,255,0.05); cursor: pointer; transition: 0.3s; }
+        .gift-item:hover { background: rgba(255,255,255,0.1); }
+        
+        .error-screen {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            z-index: 10002;
+        }
+        
+        .error-screen h2 {
+            color: #ff4444;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .error-screen p {
+            color: #ccc;
+            margin-bottom: 30px;
+            max-width: 400px;
+        }
+        
+        .retry-btn {
+            background: #FFA500;
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .retry-btn:hover {
+            background: #ff8c00;
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة التحميل -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader"></div>
+        <div style="margin-top: 20px; color: white; opacity: 0.7; font-size: 14px;">جاري تحميل التطبيق...</div>
+    </div>
+
+    <!-- شاشة الخطأ -->
+    <div id="error-screen" class="error-screen">
+        <h2>⚠️ خطأ في تحميل التطبيق</h2>
+        <p>يبدو أن هناك مشكلة في تحميل بيانات حسابك. يرجى المحاولة مرة أخرى أو تسجيل الدخول من جديد.</p>
+        <button onclick="retryLoad()" class="retry-btn">إعادة المحاولة</button>
+        <button onclick="goToLogin()" style="margin-top: 15px; background: transparent; color: #FFA500; border: 1px solid #FFA500; padding: 10px 20px; border-radius: 10px; cursor: pointer;">العودة لتسجيل الدخول</button>
+    </div>
+
+    <!-- التطبيق الرئيسي -->
+    <div id="main-app" style="display: none; height: 100%;">
+        <!-- Shared Header -->
+        <header class="app-header">
+            <button onclick="toggleSidebar()" class="p-3 bg-white/5 rounded-2xl"><i data-lucide="menu"></i></button>
+            <div class="text-center">
+                <span class="text-[9px] font-bold tracking-widest opacity-40 uppercase" id="screen-subtitle">Afnan Network</span>
+                <div class="text-sm font-bold" id="screen-title">الدردشة العامة</div>
+            </div>
+            <div id="header-action">
+                <div class="w-11 h-11 rounded-full bg-white/5 flex items-center justify-center"><i data-lucide="globe" class="opacity-50"></i></div>
+            </div>
+        </header>
+
+        <!-- Sidebar Menu -->
+        <div id="sidebar" class="sidebar">
+            <div class="p-8 text-center border-b border-white/5">
+                <img id="user-avatar" src="https://i.pravatar.cc/150?u=me" class="w-20 h-20 rounded-full mx-auto border-2 border-orange-500 mb-3 shadow-lg shadow-orange-500/20">
+                <div id="user-name" class="font-bold text-lg">مستخدم جديد</div>
+                <div id="user-id" class="text-[10px] opacity-40">ID: ...</div>
+            </div>
+            
+            <div class="mt-[30px] flex-1">
+                <div class="sidebar-item" onclick="switchView('wallet')">
+                    <i data-lucide="wallet" class="text-orange-500"></i>
+                    <span>المحفظة</span>
+                </div>
+                <div class="sidebar-item" onclick="switchView('friends')">
+                    <i data-lucide="users" class="text-blue-400"></i>
+                    <span>أصدقائي</span>
+                </div>
+                <div class="sidebar-item" onclick="showStore()">
+                    <i data-lucide="shopping-bag" class="text-purple-400"></i>
+                    <span>المتجر</span>
+                </div>
+            </div>
+
+            <div class="p-5">
+                <button onclick="logoutUser()" class="w-full flex items-center justify-center gap-2 p-4 bg-red-500/10 text-red-500 rounded-2xl font-bold">
+                    <i data-lucide="log-out"></i> تسجيل الخروج
+                </button>
+            </div>
+        </div>
+
+        <!-- VIEW 1: Public Chat -->
+        <div id="view-public" class="view-screen active">
+            <div id="public-chat-list" class="chat-content"></div>
+            <footer class="p-4 bg-black/50 backdrop-blur-md">
+                <div class="bg-white/5 rounded-full p-2 flex items-center border border-white/10">
+                    <button onclick="openGiftSheet()" class="p-3 text-orange-400"><i data-lucide="gift"></i></button>
+                    <input id="public-input" class="flex-1 bg-transparent border-none outline-none p-2 text-sm" placeholder="رسالة للجميع...">
+                    <button onclick="sendMessage('public')" class="bg-white text-black p-3 rounded-full"><i data-lucide="send"></i></button>
+                </div>
+            </footer>
+        </div>
+
+        <!-- VIEW 2: Wallet -->
+        <div id="view-wallet" class="view-screen">
+            <div class="p-6">
+                <div class="glass-card mb-10">
+                    <div class="text-[10px] opacity-50 mb-1">رصيدك الحالي</div>
+                    <div id="wallet-balance" class="text-4xl font-bold text-orange-500">27,000 <span class="text-xs">💰</span></div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 mt-[50px]">
+                    <div class="buy-card">
+                        <div class="text-[10px] opacity-50 mb-1">+27,000</div>
+                        <div class="font-bold text-sm mb-3">1 دولار</div>
+                        <button onclick="addBalance(27000)" class="w-full py-2 bg-white/10 rounded-xl text-[10px] font-bold">شراء</button>
+                    </div>
+                    <div class="buy-card">
+                        <div class="text-[10px] opacity-50 mb-1">+140,000</div>
+                        <div class="font-bold text-sm mb-3">5 دولار</div>
+                        <button onclick="addBalance(140000)" class="w-full py-2 bg-white/10 rounded-xl text-[10px] font-bold">شراء</button>
+                    </div>
+                    <div class="buy-card">
+                        <div class="text-[10px] opacity-50 mb-1">+300,000</div>
+                        <div class="font-bold text-sm mb-3">10 دولار</div>
+                        <button onclick="addBalance(300000)" class="w-full py-2 bg-white/10 rounded-xl text-[10px] font-bold">شراء</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: Friends -->
+        <div id="view-friends" class="view-screen">
+            <div class="p-4 flex flex-col gap-2" id="friends-list">
+                <div class="opacity-30 text-center mt-10">لا توجد محادثات سابقة حالياً</div>
+            </div>
+        </div>
+
+        <!-- Bottom Sheet للهدايا -->
+        <div id="gift-sheet" class="bottom-sheet" style="height: 60vh; padding: 20px;">
+            <div class="text-center mb-6">
+                <div class="text-lg font-bold">إرسال هدية</div>
+                <div class="text-xs opacity-50">اختر هدية لإرسالها</div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-3">
+                <div class="gift-item" onclick="sendGift(1000, '🎁')">
+                    <div class="text-2xl mb-2">🎁</div>
+                    <div class="text-xs">هدية بسيطة</div>
+                    <div class="text-xs text-orange-500 mt-1">1,000 💰</div>
+                </div>
+                <div class="gift-item" onclick="sendGift(5000, '💝')">
+                    <div class="text-2xl mb-2">💝</div>
+                    <div class="text-xs">هدية رومانسية</div>
+                    <div class="text-xs text-orange-500 mt-1">5,000 💰</div>
+                </div>
+                <div class="gift-item" onclick="sendGift(10000, '👑')">
+                    <div class="text-2xl mb-2">👑</div>
+                    <div class="text-xs">تاج ملكي</div>
+                    <div class="text-xs text-orange-500 mt-1">10,000 💰</div>
+                </div>
+                <div class="gift-item" onclick="sendGift(15000, '🚀')">
+                    <div class="text-2xl mb-2">🚀</div>
+                    <div class="text-xs">صاروخ</div>
+                    <div class="text-xs text-orange-500 mt-1">15,000 💰</div>
+                </div>
+                <div class="gift-item" onclick="sendGift(20000, '🏆')">
+                    <div class="text-2xl mb-2">🏆</div>
+                    <div class="text-xs">كأس ذهبي</div>
+                    <div class="text-xs text-orange-500 mt-1">20,000 💰</div>
+                </div>
+                <div class="gift-item" onclick="sendGift(50000, '💎')">
+                    <div class="text-2xl mb-2">💎</div>
+                    <div class="text-xs">ماسة نادرة</div>
+                    <div class="text-xs text-orange-500 mt-1">50,000 💰</div>
+                </div>
+            </div>
+            
+            <button onclick="closeGiftSheet()" class="w-full mt-6 py-3 bg-white/10 rounded-xl text-sm font-bold">إلغاء</button>
+        </div>
+
+        <div id="overlay" class="overlay" onclick="closeAll()"></div>
+    </div>
+
+    <!-- Firebase SDK للتطبيق -->
+    <script type="module">
+        // استيراد Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { 
+            getAuth, 
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { 
+            getFirestore,
+            doc,
+            getDoc,
+            updateDoc
+        } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyCqrlFUn1UJr29tJGqikSNwsSo5_ieJo",
+            authDomain: "afnan-6a676.firebaseapp.com",
+            projectId: "afnan-6a676",
+            storageBucket: "afnan-6a676.firebasestorage.app",
+            messagingSenderId: "751685607902",
+            appId: "1:751685607902:web:11c8b40bc6c2a848c2bd4f",
+            measurementId: "G-H6LH98L5ER"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // المتغيرات العامة
+        let currentUser = null;
+        let currentBalance = 27000;
+
+        // إخفاء شاشة التحميل
+        function hideLoading() {
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+            }, 500);
+        }
+
+        // عرض شاشة الخطأ
+        function showError(message = "") {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('error-screen').style.display = 'flex';
+            
+            if (message) {
+                document.querySelector('#error-screen p').textContent = message;
+            }
+        }
+
+        // إخفاء شاشة الخطأ
+        function hideError() {
+            document.getElementById('error-screen').style.display = 'none';
+        }
+
+        // تحديث واجهة المستخدم
+        async function updateUserProfile(user) {
+            try {
+                // الحصول على بيانات المستخدم من Firestore
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    
+                    // تحديث الصورة
+                    const userAvatar = document.getElementById('user-avatar');
+                    if (userAvatar) {
+                        userAvatar.src = userData.photoURL || "https://i.pravatar.cc/150?u=" + user.uid;
+                    }
+                    
+                    // تحديث الاسم
+                    const userName = document.getElementById('user-name');
+                    if (userName) {
+                        userName.textContent = userData.displayName;
+                    }
+                    
+                    // تحديث الـ ID
+                    const userIdDisplay = document.getElementById('user-id');
+                    if (userIdDisplay) {
+                        userIdDisplay.textContent = `ID: ${userData.userId}`;
+                    }
+                    
+                    // تحديث الرصيد
+                    const balanceDisplay = document.getElementById('wallet-balance');
+                    if (balanceDisplay) {
+                        balanceDisplay.textContent = userData.balance.toLocaleString() + " 💰";
+                        currentBalance = userData.balance;
+                    }
+                    
+                    // حفظ في المتغير العام
+                    currentUser = {
+                        uid: user.uid,
+                        userId: userData.userId,
+                        displayName: userData.displayName,
+                        photoURL: userData.photoURL,
+                        balance: userData.balance
+                    };
+                    
+                    console.log("✅ تم تحديث بيانات المستخدم في الواجهة");
+                    return true;
+                } else {
+                    console.error("❌ بيانات المستخدم غير موجودة في Firestore");
+                    return false;
+                }
+            } catch (error) {
+                console.error("❌ خطأ في تحديث الملف:", error);
+                return false;
+            }
+        }
+
+        // تحديث الرصيد في Firestore
+        async function updateUserBalance(newBalance) {
+            if (!currentUser) {
+                alert('يجب تسجيل الدخول أولاً');
+                return false;
+            }
+            
+            try {
+                const userRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userRef, {
+                    balance: newBalance
+                });
+                
+                // تحديث المتغيرات المحلية
+                currentBalance = newBalance;
+                currentUser.balance = newBalance;
+                
+                // تحديث الواجهة
+                const balanceDisplay = document.getElementById('wallet-balance');
+                if (balanceDisplay) {
+                    balanceDisplay.textContent = newBalance.toLocaleString() + " 💰";
+                }
+                
+                return true;
+            } catch (error) {
+                console.error("❌ خطأ في تحديث الرصيد:", error);
+                return false;
+            }
+        }
+
+        // ✅ الحل: onAuthStateChanged في صفحة التطبيق
+        onAuthStateChanged(auth, async (user) => {
+            console.log("🔍 جاري التحقق من حالة المستخدم في صفحة التطبيق...");
+            
+            if (user) {
+                console.log("✅ مستخدم مسجل:", user.email);
+                
+                try {
+                    // تحديث بيانات المستخدم في الواجهة
+                    const success = await updateUserProfile(user);
+                    
+                    if (success) {
+                        // إخفاء شاشة التحميل وإظهار التطبيق
+                        hideLoading();
+                        hideError();
+                        document.getElementById('main-app').style.display = 'block';
+                        
+                        console.log("✅ تم تحميل التطبيق بنجاح");
+                    } else {
+                        showError("❌ بيانات حسابك غير موجودة. يرجى تسجيل الدخول مرة أخرى.");
+                    }
+                } catch (error) {
+                    console.error("❌ خطأ في تحميل بيانات المستخدم:", error);
+                    showError("حدث خطأ في تحميل بيانات حسابك: " + error.message);
+                }
+                
+            } else {
+                console.log("🚪 لا يوجد مستخدم مسجل - العودة إلى صفحة تسجيل الدخول");
+                
+                // إعادة التوجيه إلى صفحة تسجيل الدخول
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 1000);
+            }
+        });
+
+        // تسجيل الخروج
+        window.logoutUser = async function() {
+            try {
+                await signOut(auth);
+                
+                // إعادة التوجيه إلى صفحة تسجيل الدخول
+                window.location.href = "index.html";
+                
+                console.log("✅ تم تسجيل الخروج بنجاح");
+            } catch (error) {
+                console.error("❌ خطأ في تسجيل الخروج:", error);
+                alert("حدث خطأ في تسجيل الخروج");
+            }
+        };
+
+        // محاولة إعادة التحميل
+        window.retryLoad = function() {
+            hideError();
+            document.getElementById('loading-screen').style.display = 'flex';
+            
+            // إعادة تحميل الصفحة بعد قليل
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        };
+
+        // العودة إلى صفحة تسجيل الدخول
+        window.goToLogin = function() {
+            window.location.href = "index.html";
+        };
+
+        // جعل الدوال متاحة عالمياً
+        window.updateUserBalance = updateUserBalance;
+        window.firebaseAuth = auth;
+        
+        // إخفاء شاشة التحميل بعد 5 ثواني كحد أقصى (للاحتياط)
+        setTimeout(() => {
+            hideLoading();
+        }, 5000);
+    </script>
+
+    <!-- JavaScript للتطبيق الرئيسي -->
+    <script>
+        // تهيئة الأيقونات
+        lucide.createIcons();
+        
+        // دالة تبديل الواجهات
+        function switchView(viewId) {
+            // إخفاء جميع الواجهات
+            document.querySelectorAll('.view-screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // إظهار الواجهة المطلوبة
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            
+            // تحديل العنوان
+            const titles = {
+                'public': ['الدردشة العامة', 'Afnan Network'],
+                'wallet': ['المحفظة', 'إدارة الرصيد'],
+                'friends': ['أصدقائي', 'المحادثات السابقة']
+            };
+            
+            if (titles[viewId]) {
+                document.getElementById('screen-title').innerText = titles[viewId][0];
+                document.getElementById('screen-subtitle').innerText = titles[viewId][1];
+            }
+            
+            // تحديث زر الرجوع
+            const actionArea = document.getElementById('header-action');
+            if (viewId !== 'public') {
+                actionArea.innerHTML = `<button onclick="switchView('public')" class="p-3 bg-white/5 rounded-2xl"><i data-lucide="arrow-left"></i></button>`;
+            } else {
+                actionArea.innerHTML = `<div class="w-11 h-11 rounded-full bg-white/5 flex items-center justify-center"><i data-lucide="globe" class="opacity-50"></i></div>`;
+            }
+            
+            // إعادة تهيئة الأيقونات
+            lucide.createIcons();
+            
+            // إغلاق القوائم الجانبية
+            closeAll();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function closeAll() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('overlay').classList.remove('active');
+            document.getElementById('gift-sheet').classList.remove('open');
+        }
+
+        // دالة إضافة رصيد
+        window.addBalance = async function(amount) {
+            if (!window.currentUser) {
+                alert('يجب تسجيل الدخول أولاً');
+                return;
+            }
+            
+            const newBalance = window.currentUser.balance + amount;
+            const success = await window.updateUserBalance(newBalance);
+            
+            if (success) {
+                alert(`✅ تم إضافة ${amount.toLocaleString()} إلى رصيدك!`);
+            } else {
+                alert('❌ حدث خطأ في عملية الشراء');
+            }
+        };
+
+        // دالة إرسال هدية (تخصم من الرصيد)
+        async function sendGift(cost, gift) {
+            if (!window.currentUser) {
+                alert('يجب تسجيل الدخول أولاً');
+                return;
+            }
+            
+            if (window.currentUser.balance < cost) {
+                alert('❌ رصيدك غير كافي لشراء هذه الهدية!');
+                return;
+            }
+            
+            if (confirm(`هل تريد إرسال الهدية ${gift} بسعر ${cost.toLocaleString()} 💰؟`)) {
+                try {
+                    const newBalance = window.currentUser.balance - cost;
+                    const success = await window.updateUserBalance(newBalance);
+                    
+                    if (success) {
+                        closeGiftSheet();
+                        
+                        // إظهار الهدية في المحادثة
+                        const list = document.getElementById('public-chat-list');
+                        const div = document.createElement('div');
+                        div.className = `flex gap-2 flex-row-reverse`;
+                        div.innerHTML = `
+                            <img src="${window.currentUser.photoURL || 'https://i.pravatar.cc/150'}" class="w-8 h-8 rounded-full">
+                            <div class="flex flex-col items-end">
+                                <span class="text-[9px] opacity-40 mb-0.5">${window.currentUser.displayName}</span>
+                                <div class="msg-bubble msg-me" style="font-size: 24px; padding: 15px;">${gift}</div>
+                                <span class="text-[8px] opacity-30 mt-1">-${cost.toLocaleString()} 💰</span>
+                            </div>`;
+                        list.appendChild(div);
+                        list.scrollTop = list.scrollHeight;
+                        
+                        alert(`✅ تم إرسال الهدية ${gift} بنجاح!`);
+                    }
+                } catch (error) {
+                    console.error('❌ خطأ في إرسال الهدية:', error);
+                    alert('حدث خطأ في إرسال الهدية');
+                }
+            }
+        }
+
+        function openGiftSheet() {
+            document.getElementById('gift-sheet').classList.add('open');
+            document.getElementById('overlay').classList.add('active');
+        }
+
+        function closeGiftSheet() {
+            document.getElementById('gift-sheet').classList.remove('open');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function sendMessage(type) {
+            const input = document.getElementById(`${type}-input`);
+            if (!input.value.trim()) return;
+            
+            const list = document.getElementById(`${type}-chat-list`);
+            const div = document.createElement('div');
+            div.className = `flex gap-2 flex-row-reverse`;
+            div.innerHTML = `
+                <img src="${window.currentUser?.photoURL || 'https://i.pravatar.cc/150'}" class="w-8 h-8 rounded-full">
+                <div class="flex flex-col items-end">
+                    <span class="text-[9px] opacity-40 mb-0.5">${window.currentUser?.displayName || 'أنا'}</span>
+                    <div class="msg-bubble msg-me">${input.value}</div>
+                </div>`;
+            list.appendChild(div);
+            list.scrollTop = list.scrollHeight;
+            input.value = '';
+        }
+
+        function showStore() {
+            alert('🛒 المتجر قيد التطوير، سيتم إطلاقه قريباً!');
+        }
+
+        // رسالة ترحيب عند التحميل
+        window.onload = () => {
+            const list = document.getElementById('public-chat-list');
+            list.innerHTML = `
+                <div class="text-center opacity-30 text-[10px] my-4">أهلاً بك في أفنان، الدردشة مراقبة لسلامتكم</div>
+                <div class="text-center opacity-20 text-[9px] my-2">لإرسال هدية: اضغط على زر 🎁</div>
+            `;
+        };
+    </script>
+</body>
+</html>
