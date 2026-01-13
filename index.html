@@ -1,116 +1,105 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>Afnan Chat | تسجيل الدخول</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Noto Sans Arabic', sans-serif;
-      background: #000;
-      color: #fff;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Afnan Chat - تسجيل الدخول</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+    body, html { margin:0; padding:0; height:100%; background:#000; color:#fff; font-family:'Noto Sans Arabic', sans-serif; display:flex; justify-content:center; align-items:center; }
+    .login-box { background: rgba(255,255,255,0.05); padding:30px; border-radius:20px; backdrop-filter:blur(15px); width:300px; display:flex; flex-direction:column; gap:15px; }
+    input { padding:10px; border-radius:12px; border:none; outline:none; background:#111; color:#fff; }
+    button { padding:10px; border-radius:12px; border:none; background:#FFA500; color:#000; font-weight:bold; cursor:pointer; }
+</style>
 </head>
-<body class="flex items-center justify-center min-h-screen">
+<body>
 
-  <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 w-[90%] max-w-md text-center">
-    <h1 class="text-2xl font-bold mb-2">Afnan Chat</h1>
-    <p class="text-sm opacity-60 mb-8">تسجيل الدخول باستخدام Google فقط</p>
+<div class="login-box">
+    <h2 class="text-center font-bold mb-4">تسجيل الدخول</h2>
+    <input type="text" id="name" placeholder="الاسم">
+    <input type="email" id="email" placeholder="البريد الإلكتروني">
+    <input type="url" id="photoURL" placeholder="رابط الصورة">
+    <button onclick="loginUser()">تسجيل الدخول</button>
+    <div id="status" class="text-sm text-red-500 mt-2"></div>
+</div>
 
-    <button
-      onclick="loginWithGoogle()"
-      class="w-full flex items-center justify-center gap-3 py-4 bg-white text-black rounded-2xl font-bold hover:bg-gray-200 transition"
-    >
-      <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5">
-      تسجيل الدخول بواسطة Google
-    </button>
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-    <div id="status" class="text-xs opacity-50 mt-6"></div>
-  </div>
+// Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyCyCqrlFUn1UJr29tJGqikSNwsSo5_ieJo",
+    authDomain: "afnan-6a676.firebaseapp.com",
+    projectId: "afnan-6a676",
+    storageBucket: "afnan-6a676.firebasestorage.app",
+    messagingSenderId: "751685607902",
+    appId: "1:751685607902:web:11c8b40bc6c2a848c2bd4f"
+};
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-    import {
-      getAuth,
-      GoogleAuthProvider,
-      signInWithPopup,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      setDoc,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCyCqrlFUn1UJr29tJGqikSNwsSo5_ieJo",
-      authDomain: "afnan-6a676.firebaseapp.com",
-      projectId: "afnan-6a676",
-      storageBucket: "afnan-6a676.firebasestorage.app",
-      messagingSenderId: "751685607902",
-      appId: "1:751685607902:web:11c8b40bc6c2a848c2bd4f"
-    };
+// دالة توليد ID مكون من 8 أرقام
+function generateUniqueId(){
+    return Math.floor(10000000 + Math.random() * 90000000).toString();
+}
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
+// تسجيل الدخول / إنشاء المستخدم
+async function loginUser(){
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const photoURL = document.getElementById('photoURL').value.trim() || "https://i.pravatar.cc/150?u="+Math.random();
 
-    // توليد ID من 8 أرقام
-    function generateUserId() {
-      return Math.floor(10000000 + Math.random() * 90000000).toString();
+    if(!name || !email){
+        document.getElementById('status').textContent = "الرجاء إدخال الاسم والبريد الإلكتروني!";
+        return;
     }
 
-    // تسجيل الدخول
-    window.loginWithGoogle = async function () {
-      try {
-        document.getElementById("status").textContent = "جاري تسجيل الدخول...";
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
+    // uid مؤقت: نستخدم البريد الإلكتروني كمعرف مؤقت
+    const uid = btoa(email); // تحويل البريد لbase64 ليكون معرف فريد
 
-        const userRef = doc(db, "users", user.uid);
-        const snap = await getDoc(userRef);
+    try {
+        const userRef = doc(db, "users", uid);
+        const userSnap = await getDoc(userRef);
 
-        // أول مرة فقط
-        if (!snap.exists()) {
-          const newUserId = generateUserId();
+        let userData;
 
-          await setDoc(userRef, {
-            userId: newUserId,
-            displayName: user.displayName || "مستخدم جديد",
-            email: user.email,
-            photoURL: user.photoURL,
-            balance: 27000,
-            createdAt: serverTimestamp()
-          });
-
-          console.log("🆕 مستخدم جديد – ID:", newUserId);
+        if(!userSnap.exists()){
+            // مستخدم جديد
+            const newId = generateUniqueId();
+            userData = {
+                uid: uid,
+                userId: newId,
+                displayName: name,
+                email: email,
+                photoURL: photoURL,
+                balance: 27000,
+                createdAt: serverTimestamp(),
+                lastLogin: serverTimestamp()
+            };
+            await setDoc(userRef, userData);
+            console.log("مستخدم جديد تم إنشاؤه:", newId);
         } else {
-          console.log("👤 مستخدم قديم");
+            // مستخدم موجود
+            userData = userSnap.data();
+            console.log("مستخدم موجود:", userData.userId);
         }
 
-        // تحويل للتطبيق
+        // حفظ بيانات المستخدم في LocalStorage لصفحة app.html
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+
+        // إعادة التوجيه
         window.location.href = "app.html";
 
-      } catch (err) {
-        console.error(err);
-        document.getElementById("status").textContent = "❌ فشل تسجيل الدخول";
-      }
-    };
-
-    // لو مسجل دخول بالفعل → تحويل مباشر
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        window.location.href = "app.html";
-      }
-    });
-  </script>
-
+    } catch (error) {
+        console.error("حدث خطأ:", error);
+        document.getElementById('status').textContent = "حدث خطأ في تسجيل الدخول، حاول مرة أخرى!";
+    }
+}
+</script>
 </body>
 </html>
