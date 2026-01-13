@@ -3,385 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Afnan Chat - Elite Edition</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
+    <title>أفنان - تسجيل الدخول</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        body, html { 
-            height: 100%; 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Noto Sans Arabic', sans-serif; 
-            overflow-x: hidden;
-        }
-        
-        /* شاشة تسجيل الدخول */
-        .login-screen { 
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0f0f1e 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            z-index: 10000;
-            overflow-y: auto;
+            overflow-x: hidden;
         }
-        
-        .login-container { 
-            width: 100%; 
-            max-width: 500px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 40px; 
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
         }
-        
-        .logo-section { 
-            display: flex; 
-            justify-content: center; 
-            margin-top: 20px; 
+
+        /* Logo Section */
+        .logo-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
         }
-        
-        .logo-box { 
-            width: 120px; 
-            height: 120px; 
-            background: rgba(255, 255, 255, 0.95); 
-            border-radius: 12px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); 
-            animation: slideDown 0.6s ease-out; 
+
+        .logo-box {
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.6s ease-out;
         }
-        
-        .logo-icon { 
-            font-size: 70px; 
-            color: #0066cc; 
+
+        .logo-icon {
+            font-size: 70px;
+            color: #0066cc;
         }
-        
-        .welcome-section { 
-            text-align: center; 
-            animation: fadeIn 0.8s ease-out 0.2s both; 
+
+        /* Welcome Text Section */
+        .welcome-section {
+            text-align: center;
+            animation: fadeIn 0.8s ease-out 0.2s both;
         }
-        
-        .welcome-title { 
-            font-size: 42px; 
-            font-weight: 700; 
-            color: #ffffff; 
-            margin-bottom: 15px; 
-            letter-spacing: -0.5px; 
-        }
-        
-        .welcome-subtitle { 
-            font-size: 16px; 
-            color: #a0a0a0; 
-            font-weight: 300; 
-            letter-spacing: 0.5px; 
-        }
-        
-        .glass-container { 
-            width: 100%; 
-            background: rgba(255, 255, 255, 0.08); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255, 255, 255, 0.15); 
-            border-radius: 24px; 
-            padding: 30px 20px; 
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); 
-            animation: slideUp 0.6s ease-out 0.3s both; 
-        }
-        
-        .glass-title { 
-            text-align: center; 
-            color: #b0b0b0; 
-            font-size: 14px; 
-            font-weight: 500; 
-            margin-bottom: 20px; 
-            letter-spacing: 0.5px; 
-        }
-        
-        .btn-group { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-        }
-        
-        .btn { 
-            width: 100%; 
-            padding: 16px 20px; 
-            border: none; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.3s ease; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; 
-            text-decoration: none; 
-            position: relative; 
-            overflow: hidden; 
-        }
-        
-        .btn::before { 
-            content: ''; 
-            position: absolute; 
-            top: 0; 
-            left: -100%; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(255, 255, 255, 0.1); 
-            transition: left 0.3s ease; 
-            z-index: -1; 
-        }
-        
-        .btn:hover::before { 
-            left: 0; 
-        }
-        
-        .btn-google { 
-            background: #ffffff; 
-            color: #1f2937; 
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1); 
-        }
-        
-        .btn-github { 
-            background: rgba(45, 55, 72, 0.6); 
-            color: #ffffff; 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-        }
-        
-        .btn-x { 
-            background: rgba(255, 255, 255, 0.05); 
-            color: #ffffff; 
-            border: 1px solid rgba(255, 255, 255, 0.15); 
-        }
-        
-        @keyframes slideDown { 
-            from { opacity: 0; transform: translateY(-30px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-        
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(30px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-        
-        @keyframes fadeIn { 
-            from { opacity: 0; } 
-            to { opacity: 1; } 
-        }
-        
-        /* التطبيق الرئيسي */
-        .main-app { 
-            display: none; 
-            height: 100vh;
-            background: #000000;
+
+        .welcome-title {
+            font-size: 42px;
+            font-weight: 700;
             color: #ffffff;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
         }
-        
-        .view-screen { 
-            position: absolute; 
-            inset: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: #000; 
-            display: none; 
-            flex-direction: column; 
-            z-index: 10; 
-            padding-top: 80px; 
+
+        .welcome-subtitle {
+            font-size: 16px;
+            color: #a0a0a0;
+            font-weight: 300;
+            letter-spacing: 0.5px;
         }
-        
-        .view-screen.active { 
-            display: flex; 
+
+        /* Glass Container */
+        .glass-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.6s ease-out 0.3s both;
         }
-        
-        .app-header { 
-            position: fixed; 
-            top: 0; 
-            right: 0; 
-            left: 0; 
-            height: 80px; 
-            background: rgba(255, 255, 255, 0.03); 
-            backdrop-filter: blur(25px); 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0 1.2rem; 
-            z-index: 1000; 
+
+        .glass-title {
+            text-align: center;
+            color: #b0b0b0;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
         }
-        
-        .sidebar { 
-            position: fixed; 
-            top: 0; 
-            right: -280px; 
-            width: 280px; 
-            height: 100%; 
-            background: #0a0a0a; 
-            z-index: 4000; 
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-            border-left: 1px solid rgba(255,255,255,0.1); 
-            display: flex; 
-            flex-direction: column; 
+
+        /* Button Styles */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
-        
-        .sidebar.open { 
-            right: 0; 
+
+        .btn {
+            width: 100%;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
         }
-        
-        .sidebar-item { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            padding: 14px 20px; 
-            cursor: pointer; 
-            border-radius: 12px; 
-            margin: 2px 10px; 
-            transition: 0.2s; 
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: left 0.3s ease;
+            z-index: -1;
         }
-        
-        .sidebar-item:active { 
-            background: rgba(255,255,255,0.05); 
+
+        .btn:hover::before {
+            left: 0;
         }
-        
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.05); 
-            backdrop-filter: blur(15px); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 24px; 
-            padding: 25px; 
-            text-align: center; 
+
+        /* Google Login Button */
+        .btn-google {
+            background: #ffffff;
+            color: #1f2937;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
         }
-        
-        .buy-card { 
-            background: rgba(255, 255, 255, 0.03); 
-            border: 1px solid rgba(255, 255, 255, 0.08); 
-            border-radius: 20px; 
-            padding: 15px; 
-            text-align: center; 
+
+        .btn-google:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
         }
-        
-        .bottom-sheet { 
-            position: fixed; 
-            bottom: 0; 
-            right: 0; 
-            left: 0; 
-            background: rgba(15, 15, 15, 0.98); 
-            backdrop-filter: blur(40px); 
-            border-top: 1px solid rgba(255, 255, 255, 0.15); 
-            border-radius: 30px 30px 0 0; 
-            transform: translateY(100%); 
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-            z-index: 3000; 
-            padding: 20px;
-            max-height: 70vh;
-            overflow-y: auto;
+
+        .btn-google i {
+            font-size: 18px;
         }
-        
-        .bottom-sheet.open { 
-            transform: translateY(0); 
+
+        /* GitHub Login Button */
+        .btn-github {
+            background: rgba(45, 55, 72, 0.6);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
-        .chat-content { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
+
+        .btn-github:hover {
+            background: rgba(45, 55, 72, 0.8);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
         }
-        
-        .msg-bubble { 
-            max-width: 80%; 
-            padding: 10px 15px; 
-            border-radius: 18px; 
-            font-size: 14px; 
-            position: relative; 
+
+        /* X Login Button */
+        .btn-x {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
-        
-        .msg-me { 
-            background: #FFA500; 
-            color: #000; 
-            align-self: flex-end; 
-            border-bottom-right-radius: 4px; 
+
+        .btn-x:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.25);
         }
-        
-        .msg-them { 
-            background: rgba(255,255,255,0.1); 
-            color: #fff; 
-            align-self: flex-start; 
-            border-bottom-left-radius: 4px; 
+
+        /* Animations */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
-        .overlay { 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(0,0,0,0.7); 
-            z-index: 2500; 
-            display: none; 
-            backdrop-filter: blur(5px); 
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
-        .overlay.active { 
-            display: block; 
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
-        
-        .gift-item { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 15px; 
-            border-radius: 15px; 
-            background: rgba(255,255,255,0.05); 
-            cursor: pointer; 
-            transition: 0.3s; 
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .welcome-title {
+                font-size: 36px;
+            }
+
+            .logo-box {
+                width: 100px;
+                height: 100px;
+            }
+
+            .logo-icon {
+                font-size: 60px;
+            }
+
+            .glass-container {
+                padding: 25px 15px;
+            }
+
+            .btn {
+                padding: 14px 16px;
+                font-size: 15px;
+            }
         }
-        
-        .gift-item:hover { 
-            background: rgba(255,255,255,0.1); 
+
+        /* Loading State */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
-        
-        .btn-loading { 
-            position: relative; 
-            color: transparent !important; 
+
+        .btn:disabled:hover {
+            transform: none;
         }
-        
-        .btn-loading::after { 
-            content: ''; 
-            position: absolute; 
-            width: 20px; 
-            height: 20px; 
-            border: 2px solid rgba(255,255,255,0.3); 
-            border-top-color: white; 
-            border-radius: 50%; 
-            animation: spin 0.8s linear infinite; 
+
+        /* Icon Styling */
+        .btn i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
-        
-        @keyframes spin { 
-            to { transform: rotate(360deg); } 
-        }
-        
+
         .loading-screen {
             position: fixed;
             inset: 0;
@@ -391,7 +264,7 @@
             align-items: center;
             z-index: 10001;
         }
-        
+
         .loader {
             width: 50px;
             height: 50px;
@@ -400,14 +273,25 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
-        @media (max-width: 768px) {
-            .welcome-title { font-size: 36px; }
-            .logo-box { width: 100px; height: 100px; }
-            .logo-icon { font-size: 60px; }
-            .glass-container { padding: 25px 15px; }
-            .btn { padding: 14px 16px; font-size: 15px; }
-            .bottom-sheet { max-height: 80vh; }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
     </style>
 </head>
@@ -415,181 +299,46 @@
     <!-- شاشة التحميل -->
     <div id="loading-screen" class="loading-screen">
         <div class="loader"></div>
-        <div class="absolute bottom-10 text-white text-sm opacity-70">جاري التحميل...</div>
+        <div style="position: absolute; bottom: 40px; color: white; opacity: 0.7; font-size: 14px;">جاري التحميل...</div>
     </div>
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="login-screen" class="login-screen">
-        <div class="login-container">
-            <div class="logo-section">
-                <div class="logo-box">
-                    <i class="fas fa-comments logo-icon"></i>
-                </div>
-            </div>
-            <div class="welcome-section">
-                <h1 class="welcome-title">أهلاً بك في أفنان</h1>
-                <p class="welcome-subtitle">ابدأ رحلتك الإبداعية الآن</p>
-            </div>
-            <div class="glass-container">
-                <div class="glass-title">تسجيل الدخول</div>
-                <div class="btn-group">
-                    <button id="google-btn" class="btn btn-google" onclick="loginWithGoogle()">
-                        <i class="fab fa-google"></i>
-                        <span>تسجيل الدخول عبر Google</span>
-                    </button>
-                    <button id="github-btn" class="btn btn-github" onclick="loginWithGithub()">
-                        <i class="fab fa-github"></i>
-                        <span>تسجيل الدخول عبر GitHub</span>
-                    </button>
-                    <button id="x-btn" class="btn btn-x" onclick="loginWithX()">
-                        <i class="fab fa-x-twitter"></i>
-                        <span>تسجيل الدخول عبر X</span>
-                    </button>
-                </div>
+    <div class="container">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <div class="logo-box">
+                <i class="fas fa-comments logo-icon"></i>
             </div>
         </div>
-    </div>
 
-    <!-- التطبيق الرئيسي (يظهر بعد تسجيل الدخول) -->
-    <div id="main-app" class="main-app">
-        <!-- Shared Header -->
-        <header class="app-header">
-            <button onclick="toggleSidebar()" class="p-3 bg-white/5 rounded-2xl"><i data-lucide="menu"></i></button>
-            <div class="text-center">
-                <span class="text-[9px] font-bold tracking-widest opacity-40 uppercase" id="screen-subtitle">Afnan Network</span>
-                <div class="text-sm font-bold" id="screen-title">الدردشة العامة</div>
-            </div>
-            <div id="header-action">
-                <div class="w-11 h-11 rounded-full bg-white/5 flex items-center justify-center"><i data-lucide="globe" class="opacity-50"></i></div>
-            </div>
-        </header>
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1 class="welcome-title">أهلاً بك في أفنان</h1>
+            <p class="welcome-subtitle">ابدأ رحلتك الإبداعية الآن</p>
+        </div>
 
-        <!-- Sidebar Menu -->
-        <div id="sidebar" class="sidebar">
-            <div class="p-8 text-center border-b border-white/5">
-                <img id="user-avatar" src="https://i.pravatar.cc/150?u=me" class="w-20 h-20 rounded-full mx-auto border-2 border-orange-500 mb-3 shadow-lg shadow-orange-500/20">
-                <div id="user-name" class="font-bold text-lg">مستخدم جديد</div>
-                <div id="user-id" class="text-[10px] opacity-40">ID: ...</div>
-            </div>
-            
-            <div class="mt-[30px] flex-1">
-                <div class="sidebar-item" onclick="switchView('wallet')">
-                    <i data-lucide="wallet" class="text-orange-500"></i>
-                    <span>المحفظة</span>
-                </div>
-                <div class="sidebar-item" onclick="switchView('friends')">
-                    <i data-lucide="users" class="text-blue-400"></i>
-                    <span>أصدقائي</span>
-                </div>
-                <div class="sidebar-item" onclick="showStore()">
-                    <i data-lucide="shopping-bag" class="text-purple-400"></i>
-                    <span>المتجر</span>
-                </div>
-            </div>
-
-            <div class="p-5">
-                <button onclick="logoutUser()" class="w-full flex items-center justify-center gap-2 p-4 bg-red-500/10 text-red-500 rounded-2xl font-bold">
-                    <i data-lucide="log-out"></i> تسجيل الخروج
+        <!-- Glass Container with Login Options -->
+        <div class="glass-container">
+            <div class="glass-title">تسجيل الدخول</div>
+            <div class="btn-group">
+                <button id="google-btn" class="btn btn-google" onclick="loginWithGoogle()">
+                    <i class="fab fa-google"></i>
+                    <span>تسجيل الدخول عبر Google</span>
+                </button>
+                <button id="github-btn" class="btn btn-github" onclick="loginWithGithub()">
+                    <i class="fab fa-github"></i>
+                    <span>تسجيل الدخول عبر GitHub</span>
+                </button>
+                <button id="x-btn" class="btn btn-x" onclick="loginWithX()">
+                    <i class="fab fa-x-twitter"></i>
+                    <span>تسجيل الدخول عبر X</span>
                 </button>
             </div>
         </div>
-
-        <!-- VIEW 1: Public Chat -->
-        <div id="view-public" class="view-screen active">
-            <div id="public-chat-list" class="chat-content"></div>
-            <footer class="p-4 bg-black/50 backdrop-blur-md">
-                <div class="bg-white/5 rounded-full p-2 flex items-center border border-white/10">
-                    <button onclick="openGiftSheet()" class="p-3 text-orange-400"><i data-lucide="gift"></i></button>
-                    <input id="public-input" class="flex-1 bg-transparent border-none outline-none p-2 text-sm" placeholder="رسالة للجميع...">
-                    <button onclick="sendMessage('public')" class="bg-white text-black p-3 rounded-full"><i data-lucide="send"></i></button>
-                </div>
-            </footer>
-        </div>
-
-        <!-- VIEW 2: Wallet -->
-        <div id="view-wallet" class="view-screen">
-            <div class="p-6">
-                <div class="glass-card mb-10">
-                    <div class="text-[10px] opacity-50 mb-1">رصيدك الحالي</div>
-                    <div id="wallet-balance" class="text-4xl font-bold text-orange-500">27,000 <span class="text-xs">💰</span></div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-3 mt-[50px]">
-                    <div class="buy-card">
-                        <div class="text-[10px] opacity-50 mb-1">+27,000</div>
-                        <div class="font-bold text-sm mb-3">1 دولار</div>
-                        <button onclick="addBalance(27000)" class="w-full py-2 bg-white/10 rounded-xl text-[10px] font-bold">شراء</button>
-                    </div>
-                    <div class="buy-card">
-                        <div class="text-[10px] opacity-50 mb-1">+140,000</div>
-                        <div class="font-bold text-sm mb-3">5 دولار</div>
-                        <button onclick="addBalance(140000)" class="w-full py-2 bg-white/10 rounded-xl text-[10px] font-bold">شراء</button>
-                    </div>
-                    <div class="buy-card">
-                        <div class="text-[10px] opacity-50 mb-1">+300,000</div>
-                        <div class="font-bold text-sm mb-3">10 دولار</div>
-                        <button onclick="addBalance(300000)" class="w-full py-2 bg-white/10 rounded-xl text-[10px] font-bold">شراء</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- VIEW 3: Friends -->
-        <div id="view-friends" class="view-screen">
-            <div class="p-4 flex flex-col gap-2" id="friends-list">
-                <div class="opacity-30 text-center mt-10">لا توجد محادثات سابقة حالياً</div>
-            </div>
-        </div>
-
-        <!-- Bottom Sheet للهدايا -->
-        <div id="gift-sheet" class="bottom-sheet">
-            <div class="text-center mb-6">
-                <div class="text-lg font-bold">إرسال هدية</div>
-                <div class="text-xs opacity-50">اختر هدية لإرسالها</div>
-            </div>
-            
-            <div class="grid grid-cols-3 gap-3">
-                <div class="gift-item" onclick="sendGift(1000, '🎁')">
-                    <div class="text-2xl mb-2">🎁</div>
-                    <div class="text-xs">هدية بسيطة</div>
-                    <div class="text-xs text-orange-500 mt-1">1,000 💰</div>
-                </div>
-                <div class="gift-item" onclick="sendGift(5000, '💝')">
-                    <div class="text-2xl mb-2">💝</div>
-                    <div class="text-xs">هدية رومانسية</div>
-                    <div class="text-xs text-orange-500 mt-1">5,000 💰</div>
-                </div>
-                <div class="gift-item" onclick="sendGift(10000, '👑')">
-                    <div class="text-2xl mb-2">👑</div>
-                    <div class="text-xs">تاج ملكي</div>
-                    <div class="text-xs text-orange-500 mt-1">10,000 💰</div>
-                </div>
-                <div class="gift-item" onclick="sendGift(15000, '🚀')">
-                    <div class="text-2xl mb-2">🚀</div>
-                    <div class="text-xs">صاروخ</div>
-                    <div class="text-xs text-orange-500 mt-1">15,000 💰</div>
-                </div>
-                <div class="gift-item" onclick="sendGift(20000, '🏆')">
-                    <div class="text-2xl mb-2">🏆</div>
-                    <div class="text-xs">كأس ذهبي</div>
-                    <div class="text-xs text-orange-500 mt-1">20,000 💰</div>
-                </div>
-                <div class="gift-item" onclick="sendGift(50000, '💎')">
-                    <div class="text-2xl mb-2">💎</div>
-                    <div class="text-xs">ماسة نادرة</div>
-                    <div class="text-xs text-orange-500 mt-1">50,000 💰</div>
-                </div>
-            </div>
-            
-            <button onclick="closeGiftSheet()" class="w-full mt-6 py-3 bg-white/10 rounded-xl text-sm font-bold">إلغاء</button>
-        </div>
-
-        <div id="overlay" class="overlay" onclick="closeAll()"></div>
     </div>
 
-    <!-- Firebase SDK مع الحل النهائي لـ Race Condition -->
+    <!-- Firebase Scripts -->
     <script type="module">
-        // ✅ 1. استيراد Firebase SDK
+        // استيراد Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { 
             getAuth, 
@@ -597,9 +346,9 @@
             GoogleAuthProvider, 
             GithubAuthProvider, 
             TwitterAuthProvider,
-            signOut,
+            getRedirectResult,
             onAuthStateChanged,
-            getRedirectResult
+            signOut
         } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
         import { 
             getFirestore,
@@ -614,7 +363,7 @@
             serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // ✅ 2. Firebase Configuration
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCyCqrlFUn1UJr29tJGqikSNwsSo5_ieJo",
             authDomain: "afnan-6a676.firebaseapp.com",
@@ -625,24 +374,19 @@
             measurementId: "G-H6LH98L5ER"
         };
 
-        // ✅ 3. Initialize Firebase
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ✅ 4. المتغيرات العامة
-        let currentUser = null;
-        let currentBalance = 27000;
-        let isHandlingRedirect = false;
-
-        // ✅ 5. إخفاء شاشة التحميل
+        // إخفاء شاشة التحميل
         function hideLoading() {
             setTimeout(() => {
                 document.getElementById('loading-screen').style.display = 'none';
-            }, 500);
+            }, 1000);
         }
 
-        // ✅ 6. توليد ID فريد مكون من 8 أرقام
+        // توليد ID فريد مكون من 8 أرقام
         async function generateUniqueId() {
             let isUnique = false;
             let uniqueId;
@@ -651,7 +395,6 @@
             
             while (!isUnique && attempts < maxAttempts) {
                 attempts++;
-                // توليد 8 أرقام عشوائية
                 uniqueId = Math.floor(10000000 + Math.random() * 90000000).toString();
                 
                 try {
@@ -668,21 +411,19 @@
             }
             
             if (!isUnique) {
-                // خطة بديلة إذا فشلت كل المحاولات
                 uniqueId = Date.now().toString().slice(-8);
             }
             
             return uniqueId;
         }
 
-        // ✅ 7. حفظ بيانات المستخدم في Firestore
+        // حفظ بيانات المستخدم في Firestore
         async function saveUserToFirestore(user, userId) {
             try {
                 const userRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userRef);
                 
                 if (!userSnap.exists()) {
-                    // ✅ مستخدم جديد: ننشئ وثيقة جديدة
                     await setDoc(userRef, {
                         uid: user.uid,
                         userId: userId,
@@ -696,7 +437,6 @@
                     console.log("✅ تم إنشاء مستخدم جديد:", userId);
                     return userId;
                 } else {
-                    // ✅ مستخدم موجود: نحدّث آخر تسجيل دخول فقط
                     await updateDoc(userRef, {
                         lastLogin: serverTimestamp()
                     });
@@ -710,7 +450,7 @@
             }
         }
 
-        // ✅ 8. ❌❌❌ الحل: handleRedirectResult بدون أي تأثير على الواجهة ❌❌❌
+        // ✅ الحل: معالجة Redirect Result - مع التوجيه إلى صفحة التطبيق
         async function handleRedirectResult() {
             try {
                 console.log("🔄 جاري التحقق من نتيجة Redirect...");
@@ -720,93 +460,39 @@
                 if (result && result.user) {
                     console.log("✅ تم اكتشاف نتيجة Redirect:", result.user.email);
                     
-                    // ✅ فقط ننشئ المستخدم في Firestore إذا كان جديدًا
-                    const userRef = doc(db, "users", result.user.uid);
-                    const snap = await getDoc(userRef);
+                    // توليد ID فريد للمستخدم الجديد
+                    const userId = await generateUniqueId();
                     
-                    if (!snap.exists()) {
-                        const userId = await generateUniqueId();
-                        await saveUserToFirestore(result.user, userId);
-                        console.log("✅ تم إنشاء مستخدم جديد في Redirect Result");
-                    }
+                    // حفظ بيانات المستخدم
+                    await saveUserToFirestore(result.user, userId);
                     
-                    // ❌❌❌ لا نغير الواجهة هنا مطلقًا ❌❌❌
-                    // ❌ لا نخفي login
-                    // ❌ لا نظهر main-app
-                    // ❌ لا نحدث profile
-                    // ❌ هذا سيتم في onAuthStateChanged فقط
+                    console.log("✅ تم تسجيل الدخول بنجاح، جاري التوجيه إلى التطبيق...");
+                    
+                    // ✅✅✅ هذا هو الحل: توجيه المستخدم إلى صفحة التطبيق
+                    window.location.href = "app.html";
+                    
                 } else {
                     console.log("ℹ️ لا يوجد نتيجة Redirect");
+                    hideLoading();
                 }
             } catch (error) {
                 console.error("❌ خطأ في معالجة Redirect:", error);
+                hideLoading();
                 alert("حدث خطأ في تسجيل الدخول: " + error.message);
             }
         }
 
-        // ✅ 9. تحديث واجهة المستخدم
-        async function updateUserProfile(user, userId = null) {
-            try {
-                // الحصول على بيانات المستخدم من Firestore
-                const userRef = doc(db, "users", user.uid);
-                const userSnap = await getDoc(userRef);
-                
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    
-                    // تحديث الصورة
-                    const userAvatar = document.getElementById('user-avatar');
-                    if (userAvatar) {
-                        userAvatar.src = userData.photoURL || "https://i.pravatar.cc/150?u=" + user.uid;
-                    }
-                    
-                    // تحديث الاسم
-                    const userName = document.getElementById('user-name');
-                    if (userName) {
-                        userName.textContent = userData.displayName;
-                    }
-                    
-                    // تحديث الـ ID
-                    const userIdDisplay = document.getElementById('user-id');
-                    if (userIdDisplay) {
-                        userIdDisplay.textContent = `ID: ${userData.userId}`;
-                    }
-                    
-                    // تحديث الرصيد
-                    const balanceDisplay = document.getElementById('wallet-balance');
-                    if (balanceDisplay) {
-                        balanceDisplay.textContent = userData.balance.toLocaleString() + " 💰";
-                        currentBalance = userData.balance;
-                    }
-                    
-                    // حفظ في المتغير العام
-                    currentUser = {
-                        uid: user.uid,
-                        userId: userData.userId,
-                        displayName: userData.displayName,
-                        photoURL: userData.photoURL,
-                        balance: userData.balance
-                    };
-                    
-                    console.log("✅ تم تحديث بيانات المستخدم في الواجهة");
-                }
-            } catch (error) {
-                console.error("❌ خطأ في تحديث الملف:", error);
-            }
-        }
-
-        // ✅ 10. دالة تسجيل الدخول العام
+        // دالة تسجيل الدخول العام
         async function handleLogin(provider, platform) {
             try {
                 console.log(`🔄 بدء تسجيل الدخول عبر ${platform}`);
                 
                 // إضافة مؤشر التحميل
                 const btn = document.getElementById(`${platform}-btn`);
-                const originalHTML = btn.innerHTML;
                 btn.classList.add('btn-loading');
                 btn.disabled = true;
                 
-                // ✅ 100% استخدام Redirect للويب
+                // استخدام Redirect للويب
                 console.log("🌐 استخدام Redirect للويب...");
                 await signInWithRedirect(auth, provider);
                 
@@ -824,7 +510,19 @@
             }
         }
 
-        // ✅ 11. دوال تسجيل الدخول العامة
+        // ✅ التحقق من حالة المستخدم الحالي - إذا كان مسجلاً، نوجهه مباشرة للتطبيق
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("✅ مستخدم مسجل بالفعل:", user.email);
+                console.log("🔄 جاري التوجيه إلى التطبيق...");
+                window.location.href = "app.html";
+            } else {
+                console.log("🚪 لا يوجد مستخدم مسجل");
+                hideLoading();
+            }
+        });
+
+        // تعريف دوال تسجيل الدخول
         window.loginWithGoogle = async function() {
             const provider = new GoogleAuthProvider();
             await handleLogin(provider, "google");
@@ -840,284 +538,11 @@
             await handleLogin(provider, "x");
         };
 
-        // ✅ 12. تسجيل الخروج
-        window.logoutUser = async function() {
-            try {
-                await signOut(auth);
-                
-                // إخفاء التطبيق وإظهار تسجيل الدخول
-                document.getElementById('main-app').style.display = 'none';
-                document.getElementById('login-screen').style.display = 'flex';
-                
-                // إعادة تعيين المتغيرات
-                currentUser = null;
-                currentBalance = 27000;
-                
-                console.log("✅ تم تسجيل الخروج بنجاح");
-            } catch (error) {
-                console.error("❌ خطأ في تسجيل الخروج:", error);
-                alert("حدث خطأ في تسجيل الخروج");
-            }
-        };
-
-        // ✅ 13. تحديث الرصيد في Firestore
-        async function updateUserBalance(newBalance) {
-            if (!currentUser) {
-                alert('يجب تسجيل الدخول أولاً');
-                return false;
-            }
-            
-            try {
-                const userRef = doc(db, "users", currentUser.uid);
-                await updateDoc(userRef, {
-                    balance: newBalance
-                });
-                
-                // تحديث المتغيرات المحلية
-                currentBalance = newBalance;
-                currentUser.balance = newBalance;
-                
-                // تحديث الواجهة
-                const balanceDisplay = document.getElementById('wallet-balance');
-                if (balanceDisplay) {
-                    balanceDisplay.textContent = newBalance.toLocaleString() + " 💰";
-                }
-                
-                return true;
-            } catch (error) {
-                console.error("❌ خطأ في تحديث الرصيد:", error);
-                return false;
-            }
-        }
-
-        // ✅ 14. ✅✅✅ الحل النهائي: onAuthStateChanged فقط يتحكم بالواجهة ✅✅✅
-        onAuthStateChanged(auth, async (user) => {
-            console.log("🔍 جاري التحقق من حالة المستخدم في onAuthStateChanged...");
-            
-            if (user) {
-                console.log("✅ مستخدم مسجل:", user.email);
-                
-                try {
-                    // تحميل بيانات المستخدم من Firestore
-                    const userRef = doc(db, "users", user.uid);
-                    const userSnap = await getDoc(userRef);
-                    
-                    let userId;
-                    if (!userSnap.exists()) {
-                        // هذا السيناريو نادر الحدوث (إذا تم تسجيل الدخول بدون Redirect)
-                        // ولكن نتعامل معه للاحتياط
-                        userId = await generateUniqueId();
-                        await saveUserToFirestore(user, userId);
-                        console.log("⚠️ تم إنشاء مستخدم في onAuthStateChanged (سيناريو نادر)");
-                    } else {
-                        userId = userSnap.data().userId;
-                    }
-                    
-                    // ✅ هنا فقط نغير الواجهة
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('main-app').style.display = 'block';
-                    
-                    // تحديث بيانات المستخدم في الواجهة
-                    updateUserProfile(user, userId);
-                    
-                    // حفظ في المتغير العام
-                    currentUser = {
-                        uid: user.uid,
-                        userId: userId,
-                        displayName: userSnap.exists() ? userSnap.data().displayName : user.displayName,
-                        photoURL: userSnap.exists() ? userSnap.data().photoURL : user.photoURL,
-                        balance: userSnap.exists() ? userSnap.data().balance : 27000
-                    };
-                    currentBalance = currentUser.balance;
-                    
-                    console.log("✅ تم تحميل وتحديث واجهة المستخدم");
-                } catch (error) {
-                    console.error("❌ خطأ في تحميل بيانات المستخدم:", error);
-                    alert("حدث خطأ في تحميل بيانات حسابك");
-                }
-                
-            } else {
-                console.log("🚪 لا يوجد مستخدم مسجل");
-                
-                // ✅ هنا فقط نغير الواجهة عند عدم وجود مستخدم
-                document.getElementById('login-screen').style.display = 'flex';
-                document.getElementById('main-app').style.display = 'none';
-            }
-            
-            // إخفاء شاشة التحميل في كل الحالات
-            hideLoading();
-        });
-
-        // ✅ 15. تشغيل معالجة Redirect عند تحميل الصفحة
+        // تشغيل معالجة Redirect عند تحميل الصفحة
         window.addEventListener('DOMContentLoaded', () => {
-            console.log("🚀 جاري تحميل التطبيق...");
+            console.log("🚀 جاري تحميل صفحة تسجيل الدخول...");
             handleRedirectResult();
         });
-
-        // ✅ 16. جعل الدوال متاحة عالمياً
-        window.updateUserBalance = updateUserBalance;
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
-    </script>
-
-    <!-- JavaScript للتطبيق الرئيسي -->
-    <script>
-        // تهيئة الأيقونات
-        lucide.createIcons();
-        
-        // دالة تبديل الواجهات
-        function switchView(viewId) {
-            // إخفاء جميع الواجهات
-            document.querySelectorAll('.view-screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            
-            // إظهار الواجهة المطلوبة
-            document.getElementById(`view-${viewId}`).classList.add('active');
-            
-            // تحديل العنوان
-            const titles = {
-                'public': ['الدردشة العامة', 'Afnan Network'],
-                'wallet': ['المحفظة', 'إدارة الرصيد'],
-                'friends': ['أصدقائي', 'المحادثات السابقة']
-            };
-            
-            if (titles[viewId]) {
-                document.getElementById('screen-title').innerText = titles[viewId][0];
-                document.getElementById('screen-subtitle').innerText = titles[viewId][1];
-            }
-            
-            // تحديث زر الرجوع
-            const actionArea = document.getElementById('header-action');
-            if (viewId !== 'public') {
-                actionArea.innerHTML = `<button onclick="switchView('public')" class="p-3 bg-white/5 rounded-2xl"><i data-lucide="arrow-left"></i></button>`;
-            } else {
-                actionArea.innerHTML = `<div class="w-11 h-11 rounded-full bg-white/5 flex items-center justify-center"><i data-lucide="globe" class="opacity-50"></i></div>`;
-            }
-            
-            // إعادة تهيئة الأيقونات
-            lucide.createIcons();
-            
-            // إغلاق القوائم الجانبية
-            closeAll();
-        }
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-
-        function closeAll() {
-            document.getElementById('sidebar').classList.remove('open');
-            document.getElementById('overlay').classList.remove('active');
-            document.getElementById('gift-sheet').classList.remove('open');
-        }
-
-        // ✅ دالة إضافة رصيد
-        window.addBalance = async function(amount) {
-            if (!window.currentUser) {
-                alert('يجب تسجيل الدخول أولاً');
-                return;
-            }
-            
-            const newBalance = window.currentUser.balance + amount;
-            const success = await window.updateUserBalance(newBalance);
-            
-            if (success) {
-                alert(`✅ تم إضافة ${amount.toLocaleString()} إلى رصيدك!`);
-            } else {
-                alert('❌ حدث خطأ في عملية الشراء');
-            }
-        };
-
-        // ✅ دالة إرسال هدية (تخصم من الرصيد)
-        async function sendGift(cost, gift) {
-            if (!window.currentUser) {
-                alert('يجب تسجيل الدخول أولاً');
-                return;
-            }
-            
-            if (window.currentUser.balance < cost) {
-                alert('❌ رصيدك غير كافي لشراء هذه الهدية!');
-                return;
-            }
-            
-            if (confirm(`هل تريد إرسال الهدية ${gift} بسعر ${cost.toLocaleString()} 💰؟`)) {
-                try {
-                    const newBalance = window.currentUser.balance - cost;
-                    const success = await window.updateUserBalance(newBalance);
-                    
-                    if (success) {
-                        closeGiftSheet();
-                        
-                        // إظهار الهدية في المحادثة
-                        const list = document.getElementById('public-chat-list');
-                        const div = document.createElement('div');
-                        div.className = `flex gap-2 flex-row-reverse`;
-                        div.innerHTML = `
-                            <img src="${window.currentUser.photoURL || 'https://i.pravatar.cc/150'}" class="w-8 h-8 rounded-full">
-                            <div class="flex flex-col items-end">
-                                <span class="text-[9px] opacity-40 mb-0.5">${window.currentUser.displayName}</span>
-                                <div class="msg-bubble msg-me" style="font-size: 24px; padding: 15px;">${gift}</div>
-                                <span class="text-[8px] opacity-30 mt-1">-${cost.toLocaleString()} 💰</span>
-                            </div>`;
-                        list.appendChild(div);
-                        list.scrollTop = list.scrollHeight;
-                        
-                        alert(`✅ تم إرسال الهدية ${gift} بنجاح!`);
-                    }
-                } catch (error) {
-                    console.error('❌ خطأ في إرسال الهدية:', error);
-                    alert('حدث خطأ في إرسال الهدية');
-                }
-            }
-        }
-
-        function openGiftSheet() {
-            document.getElementById('gift-sheet').classList.add('open');
-            document.getElementById('overlay').classList.add('active');
-        }
-
-        function closeGiftSheet() {
-            document.getElementById('gift-sheet').classList.remove('open');
-            document.getElementById('overlay').classList.remove('active');
-        }
-
-        function sendMessage(type) {
-            const input = document.getElementById(`${type}-input`);
-            if (!input.value.trim()) return;
-            
-            const list = document.getElementById(`${type}-chat-list`);
-            const div = document.createElement('div');
-            div.className = `flex gap-2 flex-row-reverse`;
-            div.innerHTML = `
-                <img src="${window.currentUser?.photoURL || 'https://i.pravatar.cc/150'}" class="w-8 h-8 rounded-full">
-                <div class="flex flex-col items-end">
-                    <span class="text-[9px] opacity-40 mb-0.5">${window.currentUser?.displayName || 'أنا'}</span>
-                    <div class="msg-bubble msg-me">${input.value}</div>
-                </div>`;
-            list.appendChild(div);
-            list.scrollTop = list.scrollHeight;
-            input.value = '';
-        }
-
-        function showStore() {
-            alert('🛒 المتجر قيد التطوير، سيتم إطلاقه قريباً!');
-        }
-
-        // رسالة ترحيب عند التحميل
-        window.onload = () => {
-            const list = document.getElementById('public-chat-list');
-            list.innerHTML = `
-                <div class="text-center opacity-30 text-[10px] my-4">أهلاً بك في أفنان، الدردشة مراقبة لسلامتكم</div>
-                <div class="text-center opacity-20 text-[9px] my-2">لإرسال هدية: اضغط على زر 🎁</div>
-            `;
-            
-            // إخفاء شاشة التحميل بعد 3 ثواني كحد أقصى
-            setTimeout(() => {
-                document.getElementById('loading-screen').style.display = 'none';
-            }, 3000);
-        };
     </script>
 </body>
 </html>
