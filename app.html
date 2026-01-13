@@ -274,7 +274,9 @@
             getFirestore,
             doc,
             getDoc,
-            updateDoc
+            updateDoc,
+            setDoc,
+            serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         // Firebase Configuration
@@ -320,60 +322,10 @@
             document.getElementById('error-screen').style.display = 'none';
         }
 
-        // تحديث واجهة المستخدم
-        async function updateUserProfile(user) {
-            try {
-                // الحصول على بيانات المستخدم من Firestore
-                const userRef = doc(db, "users", user.uid);
-                const userSnap = await getDoc(userRef);
-                
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    
-                    // تحديث الصورة
-                    const userAvatar = document.getElementById('user-avatar');
-                    if (userAvatar) {
-                        userAvatar.src = userData.photoURL || "https://i.pravatar.cc/150?u=" + user.uid;
-                    }
-                    
-                    // تحديث الاسم
-                    const userName = document.getElementById('user-name');
-                    if (userName) {
-                        userName.textContent = userData.displayName;
-                    }
-                    
-                    // تحديث الـ ID
-                    const userIdDisplay = document.getElementById('user-id');
-                    if (userIdDisplay) {
-                        userIdDisplay.textContent = `ID: ${userData.userId}`;
-                    }
-                    
-                    // تحديث الرصيد
-                    const balanceDisplay = document.getElementById('wallet-balance');
-                    if (balanceDisplay) {
-                        balanceDisplay.textContent = userData.balance.toLocaleString() + " 💰";
-                        currentBalance = userData.balance;
-                    }
-                    
-                    // حفظ في المتغير العام
-                    currentUser = {
-                        uid: user.uid,
-                        userId: userData.userId,
-                        displayName: userData.displayName,
-                        photoURL: userData.photoURL,
-                        balance: userData.balance
-                    };
-                    
-                    console.log("✅ تم تحديث بيانات المستخدم في الواجهة");
-                    return true;
-                } else {
-                    console.error("❌ بيانات المستخدم غير موجودة في Firestore");
-                    return false;
-                }
-            } catch (error) {
-                console.error("❌ خطأ في تحديث الملف:", error);
-                return false;
-            }
+        // ✅ الحل: دالة لإنشاء ID فريد مكون من 8 أرقام
+        function generateUniqueId() {
+            // توليد 8 أرقام عشوائية
+            return Math.floor(10000000 + Math.random() * 90000000).toString();
         }
 
         // تحديث الرصيد في Firestore
@@ -406,7 +358,7 @@
             }
         }
 
-        // ✅ الحل: onAuthStateChanged في صفحة التطبيق
+        // ✅✅✅ الحل المعدل: onAuthStateChanged في صفحة التطبيق
         onAuthStateChanged(auth, async (user) => {
             console.log("🔍 جاري التحقق من حالة المستخدم في صفحة التطبيق...");
             
@@ -414,21 +366,69 @@
                 console.log("✅ مستخدم مسجل:", user.email);
                 
                 try {
-                    // تحديث بيانات المستخدم في الواجهة
-                    const success = await updateUserProfile(user);
+                    const userRef = doc(db, "users", user.uid);
+                    const userSnap = await getDoc(userRef);
                     
-                    if (success) {
-                        // إخفاء شاشة التحميل وإظهار التطبيق
-                        hideLoading();
-                        hideError();
-                        document.getElementById('main-app').style.display = 'block';
+                    let userData;
+                    
+                    if (!userSnap.exists()) {
+                        // ✅✅✅ المستخدم الجديد: ننشئ بياناته في Firestore
+                        const newUserId = generateUniqueId();
+                        userData = {
+                            uid: user.uid,
+                            userId: newUserId,
+                            displayName: user.displayName || "مستخدم جديد",
+                            email: user.email || "",
+                            photoURL: user.photoURL || "https://i.pravatar.cc/150?u=" + user.uid,
+                            balance: 27000,
+                            createdAt: serverTimestamp(),
+                            lastLogin: serverTimestamp()
+                        };
                         
-                        console.log("✅ تم تحميل التطبيق بنجاح");
+                        await setDoc(userRef, userData);
+                        console.log("🆕 مستخدم جديد تم إنشاؤه:", newUserId);
                     } else {
-                        showError("❌ بيانات حسابك غير موجودة. يرجى تسجيل الدخول مرة أخرى.");
+                        // ✅ المستخدم موجود: نستخدم بياناته
+                        userData = userSnap.data();
+                        
+                        // ✅ نحدث وقت آخر تسجيل دخول
+                        await updateDoc(userRef, {
+                            lastLogin: serverTimestamp()
+                        });
+                        
+                        console.log("👤 مستخدم قديم:", userData.userId);
                     }
+                    
+                    // ✅ تحديث واجهة المستخدم
+                    const userAvatar = document.getElementById('user-avatar');
+                    const userName = document.getElementById('user-name');
+                    const userIdDisplay = document.getElementById('user-id');
+                    const balanceDisplay = document.getElementById('wallet-balance');
+                    
+                    if (userAvatar) userAvatar.src = userData.photoURL;
+                    if (userName) userName.textContent = userData.displayName;
+                    if (userIdDisplay) userIdDisplay.textContent = `ID: ${userData.userId}`;
+                    if (balanceDisplay) balanceDisplay.textContent = userData.balance.toLocaleString() + " 💰";
+                    
+                    // ✅ حفظ بيانات المستخدم في المتغير العام
+                    currentUser = {
+                        uid: user.uid,
+                        userId: userData.userId,
+                        displayName: userData.displayName,
+                        photoURL: userData.photoURL,
+                        balance: userData.balance
+                    };
+                    currentBalance = userData.balance;
+                    
+                    // ✅ إخفاء شاشة التحميل وإظهار التطبيق
+                    hideLoading();
+                    hideError();
+                    document.getElementById('main-app').style.display = 'block';
+                    
+                    console.log("✅ تم تحميل التطبيق بنجاح");
+                    
                 } catch (error) {
-                    console.error("❌ خطأ في تحميل بيانات المستخدم:", error);
+                    console.error("❌ خطأ في تحميل/إنشاء بيانات المستخدم:", error);
                     showError("حدث خطأ في تحميل بيانات حسابك: " + error.message);
                 }
                 
